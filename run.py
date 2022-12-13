@@ -14,6 +14,11 @@ from classes.PixelPriority import PixelPriority
 from scripts.load import *
 from classes.Pixel import *
 import numpy as npy
+import firebase_admin
+from firebase_admin import credentials, db
+
+cred = credentials.Certificate("ar-jumbo-firebase.json")
+firebase_admin.initialize_app(cred, {'databaseURL': 'https://ar-jumbo-default-rtdb.europe-west1.firebasedatabase.app/'})
 
 def convert_pixels_to_metric():
     # Size in meters (m)
@@ -115,9 +120,24 @@ def st(imagleFile: str, algorithm: str) -> None:
                     print(pixel_size)
                     x_offset = item['x_offset'] * pixel_size
                     y_offset = item['y_offset'] * pixel_size
+                    z_offset = 0
 
-                    nodes_offsets_metric.append(({"x_offset": x_offset, "y_offset": y_offset}))
+                    nodes_offsets_metric.append(({"type": "intermediate", "x_offset": x_offset, "y_offset": y_offset, "z_offset": z_offset}))
 
+                # nodes_offsets_metric[0]["type"] = "start"
+                nodes_offsets_metric[0] = {"type": "start", "x_offset": -0.016797080636024475, "y_offset": 0.2962658107280731, "z_offset": 0}
+                nodes_offsets_metric[len(nodes_offsets_metric)-1]["type"] = "destination"
+
+                ref = db.reference("/destination/" + "algorythm")
+                db_object = {
+                    "beacon_name": "jumbo_ar_3",
+                    "destination": "algorythm",
+                    "node_count": len(nodes_offsets_metric),
+                    "nodes": {
+                        "index": nodes_offsets_metric
+                    }
+                }
+                ref.set(db_object)
                 for item in nodes_offsets_metric:
                     print(item)
 
