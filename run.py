@@ -15,6 +15,17 @@ from scripts.load import *
 from classes.Pixel import *
 import numpy as npy
 
+def convert_pixels_to_metric():
+    # Size in meters (m)
+    image_size_x = 934
+    # image_size_y = 204
+    size_metric_x = 70.5
+    # size_metric_y = 15
+
+    return size_metric_x / image_size_x
+
+
+
 
 def st(imagleFile: str, algorithm: str) -> None:
     landPixels, data = loadPixels(imagleFile)
@@ -55,6 +66,7 @@ def st(imagleFile: str, algorithm: str) -> None:
 
                 nodes_list = []
                 nodes_offsets = []
+                nodes_offsets_metric = []
 
                 for item in path:
                     node_x = prev_x
@@ -62,7 +74,7 @@ def st(imagleFile: str, algorithm: str) -> None:
                     current_x_has_changed = False
                     current_y_has_changed = False
 
-                    print(f"X:{item.x}, Y:{item.y}")
+                    # print(f"X:{item.x}, Y:{item.y}")
 
                     if prev_x != item.x:
                         current_x_has_changed = True
@@ -79,7 +91,7 @@ def st(imagleFile: str, algorithm: str) -> None:
                     if (current_x_has_changed != prev_x_change) or (current_y_has_changed != prev_y_change):
                         img_copy[node_y][node_x] = npy.array([0, 255, 0])
                         nodes_list.append({"x": node_x, "y": node_y})
-                        print(f"Node Found! X:{node_x}, Y:{node_y}")
+                        # print(f"Node Found! X:{node_x}, Y:{node_y}")
 
                     prev_x_change = current_x_has_changed
                     prev_y_change = current_y_has_changed
@@ -98,6 +110,15 @@ def st(imagleFile: str, algorithm: str) -> None:
                     # print(item)
 
                 for item in nodes_offsets:
+                    print(item)
+                    pixel_size = convert_pixels_to_metric()
+                    print(pixel_size)
+                    x_offset = item['x_offset'] * pixel_size
+                    y_offset = item['y_offset'] * pixel_size
+
+                    nodes_offsets_metric.append(({"x_offset": x_offset, "y_offset": y_offset}))
+
+                for item in nodes_offsets_metric:
                     print(item)
 
                 cv2.imwrite('path.png', img_copy)
