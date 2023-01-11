@@ -94,15 +94,37 @@ def st(imagleFile: str, algorithm: str) -> None:
                         current_y_has_changed = False
 
                     if (current_x_has_changed != prev_x_change) or (current_y_has_changed != prev_y_change):
-                        img_copy[node_y][node_x] = npy.array([0, 255, 0])
+                        # img_copy[node_y][node_x] = npy.array([0, 255, 0])
                         nodes_list.append({"x": node_x, "y": node_y})
                         # print(f"Node Found! X:{node_x}, Y:{node_y}")
 
                     prev_x_change = current_x_has_changed
                     prev_y_change = current_y_has_changed
 
-                last_item = nodes_list[0]
-                for item in nodes_list:
+                # Add the last node from the path array
+                nodes_list.append({"x": path[len(path)-1].x, "y": path[len(path)-1].y})
+
+                filtered_nodes_list = []
+                prev_node = nodes_list[0]
+                for index in range(1, len(nodes_list)):
+                    diff_x = abs(abs(prev_node['x']) - abs(nodes_list[index]['x']))
+                    diff_y = abs(abs(prev_node['y']) - abs(nodes_list[index]['y']))
+
+                    print(diff_y + diff_x)
+                    prev_node = nodes_list[index]
+                    if (diff_y + diff_x) > 2:
+                        filtered_nodes_list.append(nodes_list[index])
+                    # print(nodes_list[index]['x'])
+                    # print(nodes_list[index]['y'])
+
+                for item in filtered_nodes_list:
+                    img_copy[item['y']][item['x']] = npy.array([0, 255, 0])
+
+                    print("Filtered node", item)
+
+                last_item = filtered_nodes_list[0]
+                for item in filtered_nodes_list:
+                    print("item", item)
                     x_offset = last_item['x'] - item['x']
                     y_offset = last_item['y'] - item['y']
                     last_item = item
@@ -115,9 +137,9 @@ def st(imagleFile: str, algorithm: str) -> None:
                     # print(item)
 
                 for item in nodes_offsets:
-                    print(item)
+                    # print(item)
                     pixel_size = convert_pixels_to_metric()
-                    print(pixel_size)
+                    # print(pixel_size)
                     x_offset = item['x_offset'] * pixel_size
                     y_offset = item['y_offset'] * pixel_size
                     z_offset = 0
@@ -128,18 +150,18 @@ def st(imagleFile: str, algorithm: str) -> None:
                 nodes_offsets_metric[0] = {"type": "start", "x_offset": -0.016797080636024475, "y_offset": 0.2962658107280731, "z_offset": 0}
                 nodes_offsets_metric[len(nodes_offsets_metric)-1]["type"] = "destination"
 
-                ref = db.reference("/destination/" + "algorythm")
+                ref = db.reference("/destination/" + "cookies")
                 db_object = {
                     "beacon_name": "jumbo_ar_3",
-                    "destination": "algorythm",
+                    "destination": "cookies",
                     "node_count": len(nodes_offsets_metric),
                     "nodes": {
                         "index": nodes_offsets_metric
                     }
                 }
                 ref.set(db_object)
-                for item in nodes_offsets_metric:
-                    print(item)
+                # for item in nodes_offsets_metric:
+                #     print(item)
 
                 cv2.imwrite('path.png', img_copy)
 
